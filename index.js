@@ -11,4 +11,10 @@ mongoose.connect('mongodb://localhost:27017/REDSOCIAL', {
     useUnifiedTopology: true
 }).then(() => {
     console.log('La conexion ha sido establecida correctamente')
-}).catch(error => console.log(error))
+
+    //Conexion con servidor
+    app.listen(port, () => {
+        console.log('Servidor levantado correctamente');
+    });
+
+}).catch(error => console.log(error));
