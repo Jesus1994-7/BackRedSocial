@@ -2,6 +2,7 @@
 
 const jwt = require('jwt-simple');
 const moment = require('moment');
+const secret = 'clave_secreta_token';
 
 exports.createToken = function(user){
     const payload = {
@@ -16,5 +17,5 @@ exports.createToken = function(user){
         exp: moment().add(30, 'days').unix
     };
 
-    return jwt.encode(payload, )
+    return jwt.encode(payload, secret)
 };

@@ -2,6 +2,7 @@
 
 var User = require('../models/user');
 var bcrypt = require('bcrypt-nodejs');
+var jwt = require('../services/jwt');
 
 const UserController = {
     async home(req, res) {
@@ -81,13 +82,16 @@ const UserController = {
                     if (check) {
 
                         if (params.getToken) {
-                            //devolvemos token
-                            //generar token
+                            //generar token y devolver token
+                            return res.status(200).send({
+                                token: jwt.createToken(user)
+                            });
                         } else {
                             //devolvemos datos de usuario quitando la contraseña
                             user.password = undefined;
                             return res.status(200).send({ user })
                         }
+                        
                     } else {
                         return res.status(404).send({ message: 'El usuario no se ha podido loguear' })
                     }
