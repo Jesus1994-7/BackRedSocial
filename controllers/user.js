@@ -1,8 +1,9 @@
 'use strict'
 
-var User = require('../models/user');
-var bcrypt = require('bcrypt-nodejs');
-var jwt = require('../services/jwt');
+const User = require('../models/user');
+const bcrypt = require('bcrypt-nodejs');
+const jwt = require('../services/jwt');
+const mongoosePaginate = require('mongoose-pagination');
 
 const UserController = {
     async home(req, res) {
@@ -114,9 +115,32 @@ const UserController = {
 
             return res.status(200).send({user});
         });
+    },
+
+//devolver listado de usuarios paginados
+
+    async getUsers(req,res) {
+        //recogemos el id del usuario logueado en este momento
+        const identity_user_id = req.user.sub;
+
+        let page = 1;
+        if(req.params.page){
+            page = req.params.page; 
+        }
+        //cantidad de usuarios logueados por pagina
+        var itemsPerPage = 5;
+        
+        User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+            if(err) return res.status(500).send({message: 'Error en la peticion'});
+
+            if(!users) return res.status(404).send({message: 'No hay usuarios disponibles'});
+
+            return res.status(200).send({
+                users,
+                total,
+                pages: Math.ceil(total/itemsPerPage) //saca el numero de paginas que van a existir
+            });
+        });
     }
 }
-
-
-
 module.exports = UserController;
