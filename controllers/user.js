@@ -4,6 +4,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('../services/jwt');
 const mongoosePaginate = require('mongoose-pagination');
+const { use } = require('../routes/user');
 
 const UserController = {
     async home(req, res) {
@@ -140,6 +141,26 @@ const UserController = {
                 total,
                 pages: Math.ceil(total/itemsPerPage) //saca el numero de paginas que van a existir
             });
+        });
+    },
+
+    async updateUser(req,res) {
+        const userId = req.params.id;
+        const update = req.body;
+
+        //hay que borrar la password y actualizarla por separado
+        delete update.password;
+
+        if(userId != req.user.sub){
+            return res.status(500).send({message: 'No tienes permiso para actualizar los datos del usuario'})
+        }
+        //busco usuario por id, le paso los datos a actualizar y el objeto modificado(new)
+        User.findByIdAndUpdate(userId, update, {new:true}, (err, userUpdated) => {
+            if(err) return res.status(500).send({message: 'Error en la peticion'});
+
+            if(!userUpdated) return res.status(404).send({message: 'No se ha podido actualizar el usuario'});
+
+            return res.status(200).send({user: userUpdated})
         });
     }
 }
