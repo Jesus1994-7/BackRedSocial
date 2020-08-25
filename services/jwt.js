@@ -6,7 +6,7 @@ const secret = 'clave_secreta_token';
 
 exports.createToken = function(user){
     const payload = {
-        sub: user._id,
+        id: user._id,
         name: user.name,
         surname: user.surname,
         nick: user.nick,

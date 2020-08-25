@@ -6,24 +6,11 @@ const jwt = require('../services/jwt');
 const mongoosePaginate = require('mongoose-pagination');
 const fs = require('fs'); //trabajar con archivos
 const path = require('path'); //trabajar con rutas
-const { use } = require('../routes/user');
-const { exists } = require('../models/user');
+
 
 const UserController = {
-    async home(req, res) {
-        res.status(200).send({
-            message: 'Hola mundo'
-        });
-    },
 
-    async pruebas(req, res) {
-        console.log(req.body);
-        res.status(200).send({
-            message: 'Accion de pruebas'
-        });
-    },
-
-    async saveUser(req, res) {
+    async register(req, res) {
         const params = req.body;
         const user = new User();
 
@@ -79,7 +66,7 @@ const UserController = {
         const email = params.email;
         const password = params.password;
 
-        User.findOne({ email: email }, (err, user) => {
+        await User.findOne({ email: email }, (err, user) => {
             if (err) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (user) { //si la password que nosotros mandamos es igual a la encriptada
@@ -112,7 +99,7 @@ const UserController = {
     async getUser(req, res) {
         const userId = req.params.id;
 
-        User.findById(userId, (err, user) => {
+        await User.findById(userId, (err, user) => {
             if (err) return res.status(500).send({ message: 'Error en la petición' });
 
             if (!user) return res.status(404).send({ message: 'El usuario no existe' });
@@ -125,7 +112,7 @@ const UserController = {
 
     async getUsers(req, res) {
         //recogemos el id del usuario logueado en este momento
-        const identity_user_id = req.user.sub;
+        const identity_user_id = req.user.id;
 
         let page = 1;
         if (req.params.page) {
@@ -134,7 +121,7 @@ const UserController = {
         //cantidad de usuarios logueados por pagina
         var itemsPerPage = 5;
 
-        User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+        await User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
             if (err) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (!users) return res.status(404).send({ message: 'No hay usuarios disponibles' });
@@ -147,18 +134,18 @@ const UserController = {
         });
     },
 
-    async updateUser(req, res) {
+    async update(req, res) {
         const userId = req.params.id;
         const update = req.body;
 
         //hay que borrar la password y actualizarla por separado
         delete update.password;
 
-        if (userId != req.user.sub) {
+        if (userId != req.user.id) {
             return res.status(500).send({ message: 'No tienes permiso para actualizar los datos del usuario' })
         }
         //busco usuario por id, le paso los datos a actualizar y el objeto modificado(new)
-        User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
+        await User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
             if (err) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (!userUpdated) return res.status(404).send({ message: 'No se ha podido actualizar el usuario' });
@@ -189,7 +176,7 @@ const UserController = {
             console.log(file_ext);
 
             //validacion de id para dejar cambiar la img
-            if (userId != req.user.sub) {
+            if (userId != req.user.id) {
                return removeFilesOfUploads(res, file_path, 'No tienes permisos para actualizar los datos del usuario' );
             }
 
@@ -212,9 +199,9 @@ const UserController = {
     },
 
     //devolver la imagen de un usuario
-    getImagefile( req, res) {
+    async getImageFile(req, res) {
         const imageFile = req.params.imageFile;
-        const path_file = './uploads/users/' + imageFile;
+        const pathFile = './uploads/users/' + imageFile;
 
         fs.exists(path_file, (exists) => {
             if(exists){
