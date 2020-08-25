@@ -6,7 +6,7 @@ var bodyParser = require('body-parser');
 var app = express();
 
 //carga de rutas
-var user_routes = require('./routes/user');
+var user_routes = require('./routes/users');
 
 
 //middleware

@@ -1,33 +1,32 @@
-'use strict'
+const jwt = require('jsonwebtoken');
+const UserModel = require('../models/user');
 
-const jwt = require('jwt-simple');
-const moment = require('moment');
-const secret = 'clave_secreta_token';
-
-exports.ensureAuth = function(req, res, next){
-    if(!req.headers.authorization){
-        return res.status(403).send({message: 'La peticion no tiene el header authentication'})
-    }
-
-    const token = req.headers.authorization.replace(/['"]+/g, ''); //le quitamos las comillas al token
-
+const auth = async(req, res, next) => {
     try {
-        var payload = jwt.decode(token, secret);
-
-        //si la fecha del token es menor a la actual, expira el token
-        if(payload.exp <= moment().unix()){
+        const token = req.headers.authorization;
+        jwt.verify(token, 'miSecretito');
+        const user = await UserModel.findOne({
+            tokens: token,
+        })
+        if (!user) {
             return res.status(401).send({
-                message: 'El token ha expirado'
+                message: 'You are not authorized'
             });
         }
-        
-    } catch (ex) {
-        return res.status(404).send({
-            message: 'El token no es válido'
+        req.user = user;
+        next();
+    } catch (error) {
+        console.error(error)
+        return res.status(401).send({
+            message: 'You are not authorized',
+            error
         });
     }
-
-    req.user = payload;
-
+}
+const isAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).send({ message: "You don't have enough privilegies" })
+    }
     next();
 }
+module.exports = auth, isAdmin;
