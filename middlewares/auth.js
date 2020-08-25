@@ -8,6 +8,7 @@ const auth = async(req, res, next) => {
         const user = await UserModel.findOne({
             tokens: token,
         })
+        console.log(user);
         if (!user) {
             return res.status(401).send({
                 message: 'You are not authorized'
@@ -18,15 +19,10 @@ const auth = async(req, res, next) => {
     } catch (error) {
         console.error(error)
         return res.status(401).send({
-            message: 'You are not authorized',
+            message: 'You are not authorizedd',
             error
         });
     }
 }
-const isAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).send({ message: "You don't have enough privilegies" })
-    }
-    next();
-}
-module.exports = auth, isAdmin;
+
+module.exports = auth;

@@ -1,7 +1,6 @@
 'use strict'
 
 var express = require('express');
-var bodyParser = require('body-parser');
 
 var app = express();
 
@@ -10,9 +9,9 @@ var user_routes = require('./routes/users');
 
 
 //middleware
-    //cada peticion la vamos a convertir a json
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
+//cada peticion la vamos a convertir a json
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 //rutas
 app.use('/api', user_routes);
