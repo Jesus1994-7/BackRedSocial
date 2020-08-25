@@ -7,6 +7,7 @@ const mongoosePaginate = require('mongoose-pagination');
 const fs = require('fs'); //trabajar con archivos
 const path = require('path'); //trabajar con rutas
 const { use } = require('../routes/user');
+const { exists } = require('../models/user');
 
 const UserController = {
     async home(req, res) {
@@ -166,7 +167,7 @@ const UserController = {
         });
     },
 
-    //imagen/avatar del usuario
+    //imagen-avatar del usuario
 
     async uploadImage(req, res) {
         const userId = req.params.id;
@@ -208,7 +209,22 @@ const UserController = {
         } else {
             return res.status(200).send({ message: 'No se han subido imagenes' });
         }
+    },
+
+    //devolver la imagen de un usuario
+    getImagefile( req, res) {
+        const imageFile = req.params.imageFile;
+        const path_file = './uploads/users/' + imageFile;
+
+        fs.exists(path_file, (exists) => {
+            if(exists){
+                res.sendFile(path.resolve(path_file));
+            } else {
+                res.status(200).send({message: 'No existe la imagen'});
+            }
+        })
     }
+
 }
 //funcion para remover imagenes no validas
 function removeFilesOfUploads(res, file_path, message) {
