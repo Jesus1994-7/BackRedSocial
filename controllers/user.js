@@ -30,19 +30,19 @@ const UserController = {
                     { email: user.email.toLowerCase() },
                     { nick: user.nick.toLowerCase() }
                 ]
-            }).exec((err, users) => {
-                if (err) return res.status(500).send({ message: 'Error en la peticion de usuarios' });
+            }).exec((error, users) => {
+                if (error) return res.status(500).send({ message: 'Error en la peticion de usuarios' });
 
                 if (users && users.length >= 1) {
                     return res.status(200).send({ message: 'El usuario que intentas registrar ya existe' });
                 } else {
 
                     //encriptación de contraseña
-                    bcrypt.hash(params.password, null, null, (err, hash) => {
+                    bcrypt.hash(params.password, null, null, (error, hash) => {
                         user.password = hash;
 
-                        user.save((err, userStored) => {
-                            if (err) return res.status(500).send({ message: 'Error al guardar el usuario' })
+                        user.save((error, userStored) => {
+                            if (error) return res.status(500).send({ message: 'Error al guardar el usuario' })
 
                             if (userStored) {
                                 res.status(200).send({ user: userStored });
@@ -66,11 +66,11 @@ const UserController = {
         const email = params.email;
         const password = params.password;
 
-        await User.findOne({ email: email }, (err, user) => {
-            if (err) return res.status(500).send({ message: 'Error en la peticion' });
+        await User.findOne({ email: email }, (error, user) => {
+            if (error) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (user) { //si la password que nosotros mandamos es igual a la encriptada
-                bcrypt.compare(password, user.password, (err, check) => {
+                bcrypt.compare(password, user.password, (error, check) => {
                     if (check) {
 
                         if (params.getToken) {
@@ -99,8 +99,8 @@ const UserController = {
     async getUser(req, res) {
         const userId = req.params.id;
 
-        await User.findById(userId, (err, user) => {
-            if (err) return res.status(500).send({ message: 'Error en la petición' });
+        await User.findById(userId, (error, user) => {
+            if (error) return res.status(500).send({ message: 'Error en la petición' });
 
             if (!user) return res.status(404).send({ message: 'El usuario no existe' });
 
@@ -121,8 +121,8 @@ const UserController = {
         //cantidad de usuarios logueados por pagina
         var itemsPerPage = 5;
 
-        await User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
-            if (err) return res.status(500).send({ message: 'Error en la peticion' });
+        await User.find().sort('_id').paginate(page, itemsPerPage, (error, users, total) => {
+            if (error) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (!users) return res.status(404).send({ message: 'No hay usuarios disponibles' });
 
@@ -145,8 +145,8 @@ const UserController = {
             return res.status(500).send({ message: 'No tienes permiso para actualizar los datos del usuario' })
         }
         //busco usuario por id, le paso los datos a actualizar y el objeto modificado(new)
-        await User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
-            if (err) return res.status(500).send({ message: 'Error en la peticion' });
+        await User.findByIdAndUpdate(userId, update, { new: true }, (error, userUpdated) => {
+            if (error) return res.status(500).send({ message: 'Error en la peticion' });
 
             if (!userUpdated) return res.status(404).send({ message: 'No se ha podido actualizar el usuario' });
 
@@ -182,8 +182,8 @@ const UserController = {
 
             if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif') {
                 // Actualizar el usuario con la imagen
-                User.findByIdAndUpdate(userId, {image: file_name}, {new:true}, (err, userUpdated) => {
-                    if (err) return res.status(500).send({ message: 'Error en la peticion' });
+                User.findByIdAndUpdate(userId, {image: file_name}, {new:true}, (error, userUpdated) => {
+                    if (error) return res.status(500).send({ message: 'Error en la peticion' });
 
                     if (!userUpdated) return res.status(404).send({ message: 'No se ha podido actualizar el usuario' });
         
@@ -215,7 +215,7 @@ const UserController = {
 }
 //funcion para remover imagenes no validas
 function removeFilesOfUploads(res, file_path, message) {
-    fs.unlink(file_path, (err) => {
+    fs.unlink(file_path, (error) => {
         return res.status(200).send({ message: message });
     });
 }
