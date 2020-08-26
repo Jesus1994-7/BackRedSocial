@@ -98,6 +98,26 @@ const FollowController = {
             });
 
         }); 
+    },
+
+    async getMyFollows(req, res){
+        let userId = req.user.id;
+
+        //encuentra usuarios que sigo
+        let find = Follow.find({user: userId});
+
+        //si la url que se pasa es followed (booleano), encuentra los que me siguen
+        if(req.params.followed){
+            find = Follow.find({followed: userId});
+        }
+
+        find.populate('user followed').exec((error, follows) => {
+            if(error) return res.status(500).send({message :'Error en el servidor'});
+
+            if(!follows) return res.status(404).send({message : 'No sigues a nadie'});
+
+            return res.status(200).send({follows});
+        });
     }
 }
 

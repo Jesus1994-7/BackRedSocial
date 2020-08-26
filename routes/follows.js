@@ -9,6 +9,7 @@ router.post('/follow', auth, FollowController.followed);
 router.delete('/follow/:id', auth, FollowController.unfollow);
 router.get('/following/:id?/:page?', auth, FollowController.getFollows);
 router.get('/followed/:id?/:page?', auth, FollowController.getFollowed);
+router.get('/get-follows/:followed?', auth, FollowController.getMyFollows);
 
 
 module.exports = router;
