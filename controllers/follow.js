@@ -35,7 +35,7 @@ const FollowController = {
             return res.status(200).send({message: 'Unfollow !!'});
         })
     },
-
+    //a quien seguimos
     async getFollows(req, res) {
         let user = req.user.id; //recogemos id de usuario
 
@@ -65,6 +65,39 @@ const FollowController = {
             });
 
         });
+    },
+    //quien nos sigue
+    async getFollowed (req, res) {
+        let user = req.user.id; //recogemos id de usuario
+
+        if(req.params.id && req.params.page){ //en caso de que pasemos la id por url..
+            user = req.params.id;
+        }
+
+        let page = 1;
+
+        //en caso de que se pase la pagina por url
+        if(req.params.page){
+            page = req.params.page;
+        }else {
+            page = req.params.id
+        }
+
+        const usersPage = 4; //usuarios por pagina
+
+        //Con el metodo populate cambiamos el ObjectId de user por el objeto que le indicamos, en este caso (user)
+        Follow.find({followed: user}).populate('user').paginate(page, usersPage, (error, follows, total) => {
+            if(error) return res.status(500).send({message: 'Error en el servidor'});
+
+            if(!follows) return res.status(404).send({message: 'No te sigue ningun usuario'});
+
+            return res.status(200).send({
+                total: total, //total de personas que seguimos 
+                pages: Math.ceil(total/usersPage), //total de paginas
+                follows 
+            });
+
+        }); 
     }
 }
 
