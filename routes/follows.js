@@ -7,6 +7,7 @@ const auth = require('../middlewares/auth');
 
 router.post('/follow', auth, FollowController.followed);
 router.delete('/follow/:id', auth, FollowController.unfollow);
+router.get('/following/:id?/:page?', auth, FollowController.getFollows);
 
 
 module.exports = router;
