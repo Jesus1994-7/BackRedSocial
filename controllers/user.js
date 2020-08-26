@@ -1,6 +1,7 @@
 'use strict'
 
 const User = require('../models/user');
+const Follow = require('../models/follow');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoosePaginate = require('mongoose-pagination');
@@ -76,7 +77,13 @@ const UserController = {
 
             if (!user) return res.status(404).send({ message: 'El usuario no existe' });
 
-            return res.status(200).send({ user });
+            //comprobamos si nosotros (user) estamos siguiendo al usuario que nos llega por url (followed)
+            Follow.findOne({'user': req.user.id, 'followed':userId}).exec((error, follow) => {
+                if(error) return res.status(500).send({message: 'Error comprobando seguimientos'})
+                
+                
+                return res.status(200).send({ user, follow });
+            });
         });
     },
 
