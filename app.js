@@ -5,7 +5,8 @@ var express = require('express');
 var app = express();
 
 //carga de rutas
-var user_routes = require('./routes/users');
+const userRoutes = require('./routes/users');
+const followRoutes = require('./routes/follows');
 
 
 //middleware
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 //rutas
-app.use('/api', user_routes);
+app.use('/api', userRoutes);
+app.use('/api', followRoutes);
 
 module.exports = app;
