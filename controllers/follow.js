@@ -6,6 +6,7 @@ const mongooseP = require('mongoose-pagination');
 
 const User = require('../models/user');
 const Follow = require('../models/follow');
+const { error } = require('console');
 
 const FollowController = {
 
@@ -22,6 +23,16 @@ const FollowController = {
             if(!followStored) return res.status(404).send({message: 'El follow no se ha guardado'});
 
             return res.status(200).send({follow: followStored})
+        })
+    },
+    async unfollow(req, res) {
+        const userId = req.user.id;
+        const followId = req.params.id;
+
+        Follow.find({'user': userId, 'followed': followId}).remove(error => {
+            if(error) return res.status(500).send({message: 'Error al hacer unfollow'});
+
+            return res.status(200).send({message: 'Unfollow !!'});
         })
     }
 }
