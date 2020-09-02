@@ -8,6 +8,34 @@ const mongoosePaginate = require('mongoose-pagination');
 const fs = require('fs'); //trabajar con archivos
 const path = require('path'); //trabajar con rutas
 
+//Funciones externas
+//funcion para remover imagenes no validas
+function removeFilesOfUploads(res, file_path, message) {
+    fs.unlink(file_path, (error) => {
+        return res.status(200).send({ message: message });
+    });
+}
+async function followUser(identity_user_id, userId) {
+    //comprobamos si seguimos al usuario
+    var following = await Follow.findOne({ "user": identity_user_id, "followed": userId }).exec((error, follow) => {
+        if (error) return error;
+        return follow;
+    });
+    //comprobamos si ese usuario nos sigue a nosotros
+    var followed = await Follow.findOne({ "user": userId, "followed": identity_user_id }).exec((error, follow) => {
+        if (error) return error;
+
+        return follow;
+    });
+    console.log(following, followed)
+    return {
+
+        following: following,
+        followed: followed
+    }
+}
+
+
 
 const UserController = {
 
@@ -67,7 +95,6 @@ const UserController = {
     },
 
     //datos de usuario
-
     async getUser(req, res) {
         const userId = req.params.id;
         console.log('entra');
@@ -78,15 +105,17 @@ const UserController = {
             if (!user) return res.status(404).send({ message: 'El usuario no existe' });
 
             //comprobamos si nosotros (user) estamos siguiendo al usuario que nos llega por url (followed)
-            Follow.findOne({'user': req.user.id, 'followed':userId}).exec((error, follow) => {
-                if(error) return res.status(500).send({message: 'Error comprobando seguimientos'})
-                
-                
-                return res.status(200).send({ user, follow });
+            followUser(req.user.id, userId).then((value) => {
+                //console.log(value)
+                return res.status(200).send({
+                    user,
+                    following: value.following,
+                    followed:  value.followed
+                });
+
             });
         });
     },
-
     //devolver listado de usuarios paginados
 
     async getUsers(req, res) {
@@ -112,6 +141,7 @@ const UserController = {
             });
         });
     },
+
 
     async update(req, res) {
         const userId = req.params.id;
@@ -156,20 +186,20 @@ const UserController = {
 
             //validacion de id para dejar cambiar la img
             if (userId != req.user.id) {
-               return removeFilesOfUploads(res, file_path, 'No tienes permisos para actualizar los datos del usuario' );
+                return removeFilesOfUploads(res, file_path, 'No tienes permisos para actualizar los datos del usuario');
             }
 
             if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif') {
                 // Actualizar el usuario con la imagen
-                User.findByIdAndUpdate(userId, {image: file_name}, {new:true}, (error, userUpdated) => {
+                User.findByIdAndUpdate(userId, { image: file_name }, { new: true }, (error, userUpdated) => {
                     if (error) return res.status(500).send({ message: 'Error en la peticion' });
 
                     if (!userUpdated) return res.status(404).send({ message: 'No se ha podido actualizar el usuario' });
-        
+
                     return res.status(200).send({ user: userUpdated })
                 });
             } else {
-                return removeFilesOfUploads(res, file_path, 'Extension no valida' );
+                return removeFilesOfUploads(res, file_path, 'Extension no valida');
             }
 
         } else {
@@ -183,19 +213,14 @@ const UserController = {
         const pathFile = './uploads/users/' + imageFile;
 
         fs.exists(pathFile, (exists) => {
-            if(exists){
+            if (exists) {
                 res.sendFile(path.resolve(pathFile));
             } else {
-                res.status(200).send({message: 'No existe la imagen'});
+                res.status(200).send({ message: 'No existe la imagen' });
             }
         })
     }
 
 }
-//funcion para remover imagenes no validas
-function removeFilesOfUploads(res, file_path, message) {
-    fs.unlink(file_path, (error) => {
-        return res.status(200).send({ message: message });
-    });
-}
+
 module.exports = UserController;
