@@ -1,5 +1,7 @@
 'use strict'
 
+import cors from './middleware/cors.js';
+
 var express = require('express');
 
 var app = express();
@@ -14,6 +16,9 @@ const messageRoutes = require('./routes/messages');
 //cada peticion la vamos a convertir a json
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+//cors
+app.use(cors);
 
 //rutas
 app.use('/api', userRoutes);
