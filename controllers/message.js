@@ -20,6 +20,7 @@ function doMessage(req,res) {
     message.receiver = params.receiver;
     message.text = params.text;
     message.created_at = moment().unix();
+    message.viewed = 'false';
 
     message.save((err, messageSave) => {
         if(err) return res.status(500).send({ message : 'Error en la peticion'});
@@ -51,8 +52,8 @@ function myRecivedMessages(req,res) {
             total: total,
             pages: Math.ceil(total/itemsPerPage),
             messages: messages
-        })
-    })
+        });
+    });
 }
 
 //mensajes enviados
@@ -76,11 +77,43 @@ function myEmittedMessages(req,res) {
             total: total,
             pages: Math.ceil(total/itemsPerPage),
             messages: messages
-        })
-    })
+        });
+    });
+}
+
+//mensajes sin leer
+
+function unreadMessage(req,res) {
+    const userId = req.user.id;
+
+    //utilizamos count para contar el numero de mensajes sin leer donde viewed sea false
+    Message.count({ receiver : userId, viewed : 'false'}).exec((err, count) => {
+        if(err) return res.status(500).send({ message : 'Error en la peticion'});
+
+        return res.status(200).send({
+            'unviewed' : count
+        });
+    });
+}
+
+//actualizar documentos a leidos
+
+function readMessage(req, res) {
+    const userId = req.user.id;
+
+    //recogemos los usuarios que reciben los mensajes, los pasamos a true en visto y con multi hacemos qu varios documentos se actualicen
+    Message.update({ receiver: userId, viewed : 'false'}, { viewed : 'true'}, {"multi" : true}, ((err, messageUpdated) => {
+        if(err) return res.status(500).send({ message : 'Error en la peticion'});
+
+        return res.status(200).send({
+            messages : messageUpdated
+        });
+    }));
 }
 module.exports = {
     doMessage,
     myRecivedMessages,
-    myEmittedMessages
+    myEmittedMessages,
+    unreadMessage,
+    readMessage
 }
