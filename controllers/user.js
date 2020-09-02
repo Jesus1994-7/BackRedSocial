@@ -9,6 +9,7 @@ const fs = require('fs'); //trabajar con archivos
 const path = require('path'); //trabajar con rutas
 
 //Funciones externas
+
 //funcion para remover imagenes no validas
 function removeFilesOfUploads(res, file_path, message) {
     fs.unlink(file_path, (error) => {
